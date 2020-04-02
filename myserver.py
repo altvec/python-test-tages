@@ -3,15 +3,24 @@
 
 import aiohttp
 import argparse
+import logging
 
 from aiohttp import web
 from urllib.parse import urljoin
+
+from aiocache import cached
+from aiocache.serializers import PickleSerializer
+
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__file__)
 
 
 class Server:
     def __init__(self, target):
         self.target = target
 
+    @cached(ttl=600, serializer=PickleSerializer())
     async def proxy(self, request):
         url = urljoin(self.target, request.match_info['path'])
         data = await request.read()
